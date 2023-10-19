@@ -5,21 +5,21 @@ const renderer = new THREE.WebGLRenderer();
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
-const width = document.getElementById("width");
-const length = document.getElementById("length");
-const btn = document.getElementById("btn");
+// const width = document.getElementById("width");
+// const length = document.getElementById("length");
+// const btn = document.getElementById("btn");
 
-let newWidth = 12;
-let newLength = 12;
+// let newWidth = 12;
+// let newLength = 12;
 
-function fun1() {
-  newWidth = width.value;
-  newLength = length.value;
+// function fun1() {
+//   newWidth = width.value;
+//   newLength = length.value;
 
-  console.log(newWidth, newLength);
-}
+//   console.log(newWidth, newLength);
+// }
 
-btn.addEventListener("click", fun1);
+// btn.addEventListener("click", fun1);
 
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(
@@ -37,7 +37,7 @@ camera.position.set(10, 15, -22);
 orbit.update();
 
 const planeMesh = new THREE.Mesh(
-  new THREE.PlaneGeometry(newWidth, newLength),
+  new THREE.PlaneGeometry(12, 12),
   new THREE.MeshBasicMaterial({
     side: THREE.DoubleSide,
     visible: false,
@@ -47,7 +47,7 @@ planeMesh.rotateX(-Math.PI / 2);
 scene.add(planeMesh);
 planeMesh.name = "ground";
 
-const grid = new THREE.GridHelper(newWidth, newWidth);
+const grid = new THREE.GridHelper(12, 12);
 scene.add(grid);
 
 const highlightMesh = new THREE.Mesh(
