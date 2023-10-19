@@ -68,7 +68,7 @@ const sphereMesh = new THREE.Mesh(
   new THREE.SphereGeometry(0.4, 4, 2),
   new THREE.MeshBasicMaterial({
     wireframe: false,
-    color: 0xffea00,
+    color: 0x00FF00,
   })
 );
 
