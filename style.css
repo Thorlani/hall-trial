@@ -1,0 +1,27 @@
+* {
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+  overflow: clip;
+}
+
+body {
+  background-color: #000;
+}
+
+form {
+  width: fit-content;
+  height: fit-content;
+  background-color: #fff;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 25px;
+  border-radius: 8px;
+}
+
+input {
+  width: 50px;
+  height: 25px;
+}
