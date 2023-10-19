@@ -5,22 +5,6 @@ const renderer = new THREE.WebGLRenderer();
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
-// const width = document.getElementById("width");
-// const length = document.getElementById("length");
-// const btn = document.getElementById("btn");
-
-// let newWidth = 12;
-// let newLength = 12;
-
-// function fun1() {
-//   newWidth = width.value;
-//   newLength = length.value;
-
-//   console.log(newWidth, newLength);
-// }
-
-// btn.addEventListener("click", fun1);
-
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(
   45,
@@ -88,38 +72,53 @@ const sphereMesh = new THREE.Mesh(
   })
 );
 
-const objects = [];
+// Initialize an array to keep track of the placed objects
+const placedObjects = [];
 
+// Handle object placement on clicks
 window.addEventListener("mousedown", function () {
-  const objectExist = objects.find(function (object) {
+  // Check if the clicked position is already occupied by an object
+  const existingObject = placedObjects.find((object) => {
     return (
       object.position.z === highlightMesh.position.z &&
       object.position.x === highlightMesh.position.x
     );
   });
 
-  if (!objectExist) {
+  if (!existingObject) {
     intersects.forEach(function (intersect) {
       if (intersect.object.name === "ground") {
         const sphereClone = sphereMesh.clone();
         sphereClone.position.copy(highlightMesh.position);
         scene.add(sphereClone);
-        objects.push(sphereClone);
+        placedObjects.push(sphereClone);
       }
     });
   }
 });
 
+// Handle object removal on double-clicks
 window.addEventListener("dblclick", function () {
   intersects.forEach(function (intersect) {
     if (intersect.object.name === "ground") {
-      const sphereClone = sphereMesh.clone();
-      sphereClone.position.copy(highlightMesh.position);
-      scene.remove(sphereClone);
-      objects.pop(sphereClone);
+      const selectedPosition = new THREE.Vector3(
+        highlightMesh.position.x,
+        highlightMesh.position.y,
+        highlightMesh.position.z
+      );
+
+      const objectToRemove = placedObjects.find((object) => {
+        return object.position.equals(selectedPosition);
+      });
+
+      if (objectToRemove) {
+        scene.remove(objectToRemove);
+        placedObjects.splice(placedObjects.indexOf(objectToRemove), 1);
+      }
     }
   });
 });
+
 
 function animate() {
   renderer.render(scene, camera);
