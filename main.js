@@ -58,17 +58,40 @@ const hemisphereLight = new THREE.HemisphereLight(
 );
 scene.add(hemisphereLight);
 
-const floor = new URL("floor/scene.gltf", import.meta.url);
+const textureloader = new THREE.TextureLoader();
+const tilesBaseColor = textureloader.load(
+  "floor-texture/Wood_Tiles_003_basecolor.jpg"
+);
+const tilesNormalMap = textureloader.load(
+  "floor-texture/Wood_Tiles_003_normal.jpg"
+);
+const tilesHeightMap = textureloader.load(
+  "floor-texture/Wood_Tiles_003_height.png"
+);
+const tilesRoughnessMap = textureloader.load(
+  "floor-texture/Wood_Tiles_003_roughness.jpg"
+);
+const tilesAmbientOcclusionMap = textureloader.load(
+  "floor-texture/Wood_Tiles_003_ambientOcclusion.jpg"
+);
 
 const planeMesh = new THREE.Mesh(
-  new THREE.PlaneGeometry(12, 12),
-  new THREE.MeshBasicMaterial({
+  new THREE.PlaneGeometry(12, 12, 512, 512),
+  new THREE.MeshStandardMaterial({
+    map: tilesBaseColor,
+    normalMap: tilesNormalMap,
+    displacementMap: tilesHeightMap,
+    displacementScale: -0.01,
+    roughnessMap: tilesRoughnessMap,
+    roughness: 0.5,
+    aoMap: tilesAmbientOcclusionMap,
+    visible: true,
     side: THREE.DoubleSide,
-    visible: false,
   })
 );
 planeMesh.rotateX(-Math.PI / 2);
 scene.add(planeMesh);
+// planeMesh.position.set(0,-.6,0)
 planeMesh.name = "ground";
 
 const grid = new THREE.GridHelper(12, 12);
@@ -158,15 +181,13 @@ const redGridMaterial = new THREE.LineBasicMaterial({ color: 0xff0000 });
 restrictedPositions.forEach((position) => {
   const geometry = new THREE.BufferGeometry().setFromPoints([
     new THREE.Vector3(position.x, 0, position.z),
-    new THREE.Vector3(position.x + .1, 0, position.z - 0.5), // Adjust the length of the grid line as needed
+    new THREE.Vector3(position.x + 0.1, 0, position.z - 0.5), // Adjust the length of the grid line as needed
   ]);
   const redGridLine = new THREE.Line(geometry, redGridMaterial);
   scene.add(redGridLine);
 });
 
-
 const minDistance = 2.0; // Adjust this value as needed
-
 
 // Handle object placement on clicks
 window.addEventListener("mousedown", function () {
@@ -207,7 +228,6 @@ window.addEventListener("mousedown", function () {
     }
   }
 });
-
 
 // Handle object removal on double-clicks
 window.addEventListener("dblclick", function () {
