@@ -58,6 +58,8 @@ const hemisphereLight = new THREE.HemisphereLight(
 );
 scene.add(hemisphereLight);
 
+const floor = new URL("floor/scene.gltf", import.meta.url);
+
 const planeMesh = new THREE.Mesh(
   new THREE.PlaneGeometry(12, 12),
   new THREE.MeshBasicMaterial({
@@ -105,15 +107,6 @@ window.addEventListener("mousemove", function (e) {
 
 const tableAndChairs = new URL("table-and-chairs/scene.gltf", import.meta.url);
 
-// //The cube that appears on click
-// const sphereMesh = new THREE.Mesh(
-//   new THREE.SphereGeometry(0.4, 4, 2),
-//   new THREE.MeshBasicMaterial({
-//     wireframe: false,
-//     color: 0x00ff00,
-//   })
-// );
-
 const loadingManager = new THREE.LoadingManager();
 
 const progressBar = document.getElementById("progress-bar");
@@ -149,6 +142,32 @@ assetLoader.load(
 // Initialize an array to keep track of the placed objects
 const placedObjects = [];
 
+//Pillars that would not be clickable
+const restrictedPositions = [
+  { x: 0.5, y: 0, z: 0.5 },
+  { x: 4.5, y: 0, z: 4.5 },
+  { x: 4.5, y: 0, z: -4.5 },
+  { x: -4.5, y: 0, z: 4.5 },
+  { x: -4.5, y: 0, z: -4.5 },
+];
+
+// Create a material for the red grid lines
+const redGridMaterial = new THREE.LineBasicMaterial({ color: 0xff0000 });
+
+// Loop through the restricted positions and create red grid lines
+restrictedPositions.forEach((position) => {
+  const geometry = new THREE.BufferGeometry().setFromPoints([
+    new THREE.Vector3(position.x, 0, position.z),
+    new THREE.Vector3(position.x + .1, 0, position.z - 0.5), // Adjust the length of the grid line as needed
+  ]);
+  const redGridLine = new THREE.Line(geometry, redGridMaterial);
+  scene.add(redGridLine);
+});
+
+
+const minDistance = 2.0; // Adjust this value as needed
+
+
 // Handle object placement on clicks
 window.addEventListener("mousedown", function () {
   // Check if the clicked position is already occupied by an object
@@ -160,16 +179,35 @@ window.addEventListener("mousedown", function () {
   });
 
   if (!existingObject) {
-    intersects.forEach(function (intersect) {
-      if (intersect.object.name === "ground") {
-        const stagClone = stag.clone();
-        stagClone.position.copy(highlightMesh.position);
-        scene.add(stagClone);
-        placedObjects.push(stagClone);
-      }
+    // Check proximity to existing objects
+    const isProximate = placedObjects.some((object) => {
+      const dx = object.position.x - highlightMesh.position.x;
+      const dz = object.position.z - highlightMesh.position.z;
+      const distance = Math.sqrt(dx * dx + dz * dz);
+      return distance < minDistance;
     });
+
+    // Check if the clicked position is in a restricted area
+    const isRestricted = restrictedPositions.some((position) => {
+      return (
+        position.x === highlightMesh.position.x &&
+        position.z === highlightMesh.position.z
+      );
+    });
+
+    if (!isProximate && !isRestricted) {
+      intersects.forEach(function (intersect) {
+        if (intersect.object.name === "ground") {
+          const stagClone = stag.clone();
+          stagClone.position.copy(highlightMesh.position);
+          scene.add(stagClone);
+          placedObjects.push(stagClone);
+        }
+      });
+    }
   }
 });
+
 
 // Handle object removal on double-clicks
 window.addEventListener("dblclick", function () {
