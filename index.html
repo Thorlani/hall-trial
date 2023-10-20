@@ -10,9 +10,37 @@
       body {
         margin: 0;
       }
+
+      .progress-bar-container {
+        position: absolute;
+        left: 0%;
+        top: 0%;
+        width: 100vw;
+        height: 100vh;
+        background-color: rgba(0, 0, 0, 0.8);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+      }
+      #progress-bar {
+        width: 25%;
+        margin-top: 1%;
+        height: 1.5%;
+
+        border-radius: 8px;
+      }
+      label {
+        color: white;
+        font-size: 2rem;
+      }
     </style>
   </head>
   <body>
+    <div class="progress-bar-container">
+      <label for="progress-bar">Loading you 3D model experience...</label>
+      <progress id="progress-bar" value="0" max="100"></progress>
+    </div>
     <script type="module" src="/main.js"></script>
   </body>
 </html>
