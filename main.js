@@ -1,11 +1,31 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 
-const renderer = new THREE.WebGLRenderer();
+const renderer = new THREE.WebGL1Renderer({
+  antialias: true,
+});
+
+renderer.physicallyCorrectLights = true;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ReinhardToneMapping;
+renderer.toneMappingExposure = 5;
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
+// Colors
+const COLORS = {
+  background: "white",
+  light: "#ffffff",
+  sky: "#aaaaff",
+  ground: "#88ff88",
+};
+
 const scene = new THREE.Scene();
+scene.background = new THREE.Color(COLORS.background);
 const camera = new THREE.PerspectiveCamera(
   45,
   window.innerWidth / window.innerHeight,
@@ -19,6 +39,24 @@ const orbit = new OrbitControls(camera, renderer.domElement);
 // Camera positioning
 camera.position.set(10, 15, -22);
 orbit.update();
+
+// LIGHTS
+
+const directionalLight = new THREE.DirectionalLight(COLORS.light, 2);
+directionalLight.castShadow = true;
+directionalLight.shadow.camera.far = 10;
+directionalLight.shadow.mapSize.set(1024, 1024);
+directionalLight.shadow.normalBias = 0.05;
+directionalLight.position.set(2, 5, 3);
+
+scene.add(directionalLight);
+
+const hemisphereLight = new THREE.HemisphereLight(
+  COLORS.sky,
+  COLORS.ground,
+  0.5
+);
+scene.add(hemisphereLight);
 
 const planeMesh = new THREE.Mesh(
   new THREE.PlaneGeometry(12, 12),
@@ -38,6 +76,7 @@ const highlightMesh = new THREE.Mesh(
   new THREE.PlaneGeometry(1, 1),
   new THREE.MeshBasicMaterial({
     side: THREE.DoubleSide,
+    color: 0x0effff,
   })
 );
 highlightMesh.rotateX(-Math.PI / 2);
@@ -64,12 +103,33 @@ window.addEventListener("mousemove", function (e) {
   });
 });
 
-const sphereMesh = new THREE.Mesh(
-  new THREE.SphereGeometry(0.4, 4, 2),
-  new THREE.MeshBasicMaterial({
-    wireframe: false,
-    color: 0x00FF00,
-  })
+const tableAndChairs = new URL("table-and-chairs/scene.gltf", import.meta.url);
+
+// //The cube that appears on click
+// const sphereMesh = new THREE.Mesh(
+//   new THREE.SphereGeometry(0.4, 4, 2),
+//   new THREE.MeshBasicMaterial({
+//     wireframe: false,
+//     color: 0x00ff00,
+//   })
+// );
+
+const assetLoader = new GLTFLoader();
+
+let stag;
+assetLoader.load(
+  tableAndChairs.href,
+  function (gltf) {
+    const model = gltf.scene;
+    model.scale.set(0.15, 0.15, 0.15);
+    // scene.add(model);
+    stag = model;
+    model.position.set(0.5, 0, 0.5);
+  },
+  undefined,
+  function (err) {
+    console.log(err);
+  }
 );
 
 // Initialize an array to keep track of the placed objects
@@ -88,10 +148,10 @@ window.addEventListener("mousedown", function () {
   if (!existingObject) {
     intersects.forEach(function (intersect) {
       if (intersect.object.name === "ground") {
-        const sphereClone = sphereMesh.clone();
-        sphereClone.position.copy(highlightMesh.position);
-        scene.add(sphereClone);
-        placedObjects.push(sphereClone);
+        const stagClone = stag.clone();
+        stagClone.position.copy(highlightMesh.position);
+        scene.add(stagClone);
+        placedObjects.push(stagClone);
       }
     });
   }
@@ -118,7 +178,6 @@ window.addEventListener("dblclick", function () {
     }
   });
 });
-
 
 function animate() {
   renderer.render(scene, camera);
